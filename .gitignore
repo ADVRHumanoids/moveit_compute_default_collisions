@@ -26,3 +26,12 @@
 *.exe
 *.out
 *.app
+
+#kdevelop
+*.kdev4
+
+#QtCreator
+CMakeLists.txt.user
+
+#build folder
+build/
