@@ -10,6 +10,13 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 include(ExternalProject)
 PROJECT(moveit_compute_default_collisions)
+set (moveit_compute_default_collisions_VERSION_MAJOR 0)
+set (moveit_compute_default_collisions_VERSION_MINOR 1)
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/include/version.h.in"
+  "${PROJECT_BINARY_DIR}/include/version.h"
+)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type " )
@@ -30,3 +37,8 @@ ADD_EXECUTABLE(moveit_compute_default_collisions main.cpp
 
 TARGET_LINK_LIBRARIES(moveit_compute_default_collisions ${moveit_setup_assistant_LIBRARIES}
                                                         ${Boost_LIBRARIES})
+install(TARGETS moveit_compute_default_collisions
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
