@@ -65,10 +65,18 @@ int main(int argc, char* argv[])
     }
 
     try {
+        std::cout << "Loading urdf/srdf pair.." << std::endl;
         MoveitComputeDefaultCollisions::Ptr defaultCollisions(
             new MoveitComputeDefaultCollisions(urdf_path, srdf_path));
-        defaultCollisions->print();
-        defaultCollisions->save();
+
+        std::cout << "Computing disabled collision pairs..." << std::endl;
+        if(!defaultCollisions->computeDefaultCollisions())
+            std::cout << "Error while computing disabled collision pairs" << std::endl;
+        else {
+            defaultCollisions->print();
+            std::cout << "Saving collision pairs to srdf.. " << std::endl;
+            defaultCollisions->save();
+        }
     }
     catch(std::exception& e)
     {

@@ -19,8 +19,17 @@
 #define __MOVEIT_COMPUTE_DEFAULT_COLLISIONS_H__
 
 #include <boost/shared_ptr.hpp>
+#include <moveit/setup_assistant/tools/compute_default_collisions.h>
+#include <moveit/setup_assistant/tools/moveit_config_data.h>
+#include <moveit/setup_assistant/tools/srdf_writer.h>
 
 class MoveitComputeDefaultCollisions {
+    /// main storage of link pair data
+    moveit_setup_assistant::LinkPairMap link_pairs_;
+
+    /// Contains all the configuration data for the setup assistant
+    moveit_setup_assistant::MoveItConfigDataPtr config_data_;
+
 public:
     typedef boost::shared_ptr<MoveitComputeDefaultCollisions> Ptr;
 
@@ -37,6 +46,14 @@ public:
      * @return true on success
      */
     bool save();
+
+    /**
+     * @brief computeDefaultCollisions computes the default collision for the selected urdf,srdf pair
+     * @param num_trials the number of trials of compute default collision to run.
+     *        Should be a number between 2000 and 100000. Higher numbers are suggested
+     * @return true on success
+     */
+    bool computeDefaultCollisions(unsigned int num_trials = 75000);
 };
 
 #endif
