@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
     std::string appName = boost::filesystem::basename(argv[0]);
     std::string urdf_path;
     std::string srdf_path;
+    unsigned int num_trials;
     // Define and parse the program options
     namespace po = boost::program_options;
     po::options_description desc("Options");
@@ -34,7 +35,10 @@ int main(int argc, char* argv[])
        "path of urdf file to load")
       ("srdf_path",
        po::value<std::string>(&srdf_path)->required(),
-       "path of srdf file to load and store the disabled collision pairs");
+       "path of srdf file to load and store the disabled collision pairs")
+      ("num_trials",
+       po::value<unsigned int>(&num_trials)->default_value(75000),
+       "number of collision trials (each with a randomly sampled joint configuration) for collision checking");
 
     po::variables_map vm;
     try
