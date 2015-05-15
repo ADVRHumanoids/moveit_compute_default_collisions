@@ -1,7 +1,91 @@
 #include "moveit_compute_default_collisions.h"
 
+// construct vector
+KDL::Vector toKdl(const urdf::Vector3& v)
+{
+  return KDL::Vector(v.x, v.y, v.z);
+}
+
+// construct rotation
+KDL::Rotation toKdl(const urdf::Rotation& r)
+{
+  return KDL::Rotation::Quaternion(r.x, r.y, r.z, r.w);
+}
+
+// construct pose
+KDL::Frame toKdl(const urdf::Pose& p)
+{
+  return KDL::Frame(toKdl(p.rotation), toKdl(p.position));
+}
+
+// construct vector
+urdf::Vector3 toUrdf(const KDL::Vector& v)
+{
+    return urdf::Vector3(v.x(), v.y(), v.z());
+}
+
+// construct rotation
+urdf::Rotation toUrdf(const KDL::Rotation& r)
+{
+    double x,y,z,w;
+    r.GetQuaternion(x,y,z,w);
+    return urdf::Rotation(x, y, z, w);
+}
+
+// construct pose
+urdf::Pose toUrdf(const KDL::Frame& f)
+{
+    urdf::Pose p;
+    p.position = toUrdf(f.p);
+    p.rotation = toUrdf(f.M);
+    return p;
+}
+
+
+void MoveitComputeDefaultCollisions::convertCylindersToCapsules(boost::shared_ptr<urdf::Model> urdf_model)
+{
+    std::vector<boost::shared_ptr<urdf::Link> > links; urdf_model->getLinks(links);
+    typedef std::vector<boost::shared_ptr<urdf::Link> >::iterator link_it;
+    for(link_it it = links.begin();
+        it != links.end(); ++it) {
+        boost::shared_ptr<urdf::Link> link = *it;
+        if( link->collision &&
+            link->collision->geometry &&
+            link->collision->geometry->type == urdf::Geometry::CYLINDER )
+        {
+            Capsule c(  toKdl(link->collision->origin),
+                        boost::dynamic_pointer_cast<urdf::Cylinder>(link->collision->geometry)->radius,
+                        boost::dynamic_pointer_cast<urdf::Cylinder>(link->collision->geometry)->length);
+            KDL::Vector ep1, ep2;
+            c.getEndPoints(ep1,ep2);
+
+            boost::shared_ptr<urdf::Collision> c1(new urdf::Collision());
+            c1->group_name = link->collision->group_name;
+            c1->origin.position = toUrdf(ep1);
+            c1->origin.rotation = link->collision->origin.rotation;
+            boost::shared_ptr<urdf::Sphere> s1(new urdf::Sphere());
+            s1->radius = c.getRadius(); s1->type = urdf::Geometry::SPHERE;
+            c1->geometry = s1;
+
+            boost::shared_ptr<urdf::Collision> c2(new urdf::Collision());
+            c2->origin.position = toUrdf(ep2);
+            c2->origin.rotation = link->collision->origin.rotation;
+            boost::shared_ptr<urdf::Sphere> s2(new urdf::Sphere());
+            s2->radius = c.getRadius(); s2->type = urdf::Geometry::SPHERE;
+            c2->geometry = s2;
+
+            // ATM apparently moveit_setup_assistant takes only first collision geometry
+            link->collision_array.push_back(link->collision);
+            link->collision_array.push_back(c1);
+            link->collision_array.push_back(c2);
+            link->collision.reset();
+        }
+    }
+}
+
 MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions(const std::string &urdf_path,
-                                                               const std::string &srdf_path)
+                                                               const std::string &srdf_path,
+                                                               const bool& cylinders_to_capsules)
 {
     config_data_.reset(new moveit_setup_assistant::MoveItConfigData());
     config_data_->urdf_path_ = urdf_path;
@@ -14,6 +98,13 @@ MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions(const std::string
     }
     else
     {
+        if(cylinders_to_capsules)
+        {
+            std::cout << "Converting cylinders to capsules..";
+            this->convertCylindersToCapsules(config_data_->urdf_model_);
+            std::cout << "ok" << std::endl;
+        }
+
         config_data_->srdf_->srdf_model_.reset(new srdf::Model());
         if(!config_data_->srdf_->srdf_model_->initFile(*config_data_->urdf_model_,
                                                        srdf_path))

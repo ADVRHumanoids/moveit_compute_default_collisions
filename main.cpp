@@ -25,6 +25,8 @@ int main(int argc, char* argv[])
     std::string urdf_path;
     std::string srdf_path;
     unsigned int num_trials;
+    bool cylinders_to_capsules;
+
     // Define and parse the program options
     namespace po = boost::program_options;
     po::options_description desc("Options");
@@ -38,7 +40,9 @@ int main(int argc, char* argv[])
        "path of srdf file to load and store the disabled collision pairs")
       ("num_trials",
        po::value<unsigned int>(&num_trials)->default_value(75000),
-       "number of collision trials (each with a randomly sampled joint configuration) for collision checking");
+       "number of collision trials (each with a randomly sampled joint configuration) for collision checking")
+      ("cylinders_to_capsules",
+       po::bool_switch(&cylinders_to_capsules));
 
     po::variables_map vm;
     try
@@ -71,7 +75,7 @@ int main(int argc, char* argv[])
     try {
         std::cout << "Loading urdf/srdf pair.." << std::endl;
         MoveitComputeDefaultCollisions::Ptr defaultCollisions(
-            new MoveitComputeDefaultCollisions(urdf_path, srdf_path));
+            new MoveitComputeDefaultCollisions(urdf_path, srdf_path,cylinders_to_capsules));
 
         std::cout << "Computing disabled collision pairs..." << std::endl;
         if(!defaultCollisions->computeDefaultCollisions())

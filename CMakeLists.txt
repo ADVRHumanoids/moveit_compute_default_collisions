@@ -23,11 +23,13 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 FIND_PACKAGE(Boost COMPONENTS filesystem program_options REQUIRED)
+FIND_PACKAGE(orocos_kdl REQUIRED)
 FIND_PACKAGE(moveit_setup_assistant REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
 
-INCLUDE_DIRECTORIES(include ${moveit_setup_assistant_INCLUDE_DIRS}
+INCLUDE_DIRECTORIES(include ${orocos_kdl_INCLUDE_DIRS}
+                            ${moveit_setup_assistant_INCLUDE_DIRS}
                             ${Boost_INCLUDE_DIRS})
 
 file(GLOB_RECURSE proj_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h)
@@ -35,7 +37,8 @@ ADD_EXECUTABLE(moveit_compute_default_collisions main.cpp
                                                  src/moveit_compute_default_collisions.cpp
                                                  ${proj_INCLUDES})
 
-TARGET_LINK_LIBRARIES(moveit_compute_default_collisions ${moveit_setup_assistant_LIBRARIES}
+TARGET_LINK_LIBRARIES(moveit_compute_default_collisions ${orocos_kdl_LIBRARIES}
+                                                        ${moveit_setup_assistant_LIBRARIES}
                                                         ${Boost_LIBRARIES})
 install(TARGETS moveit_compute_default_collisions
         RUNTIME DESTINATION bin
