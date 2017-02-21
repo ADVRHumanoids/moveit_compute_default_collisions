@@ -1,3 +1,4 @@
 
 #define moveit_compute_default_collisions_VERSION_MAJOR @moveit_compute_default_collisions_VERSION_MAJOR@
 #define moveit_compute_default_collisions_VERSION_MINOR @moveit_compute_default_collisions_VERSION_MINOR@
+#define moveit_compute_default_collisions_use_xenial @moveit_compute_default_collisions_use_xenial@

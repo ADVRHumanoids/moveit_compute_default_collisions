@@ -22,7 +22,6 @@
 #include <kdl/frames.hpp>
 #include <moveit/setup_assistant/tools/compute_default_collisions.h>
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
-#include <moveit/setup_assistant/tools/srdf_writer.h>
 
 /**
  * @brief The MoveitComputeDefaultCollisions class computes the ACM (allowed collision matrix)

@@ -60,7 +60,9 @@ void MoveitComputeDefaultCollisions::convertCylindersToCapsules(boost::shared_pt
             c.getEndPoints(ep1,ep2);
 
             boost::shared_ptr<urdf::Collision> c1(new urdf::Collision());
+#if(moveit_compute_default_collisions_use_xenial == 1)
             c1->group_name = link->collision->group_name;
+#endif
             c1->origin.position = toUrdf(ep1);
             c1->origin.rotation = link->collision->origin.rotation;
             boost::shared_ptr<urdf::Sphere> s1(new urdf::Sphere());
