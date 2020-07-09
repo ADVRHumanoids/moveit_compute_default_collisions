@@ -60,6 +60,7 @@ FIND_PACKAGE(orocos_kdl REQUIRED)
 FIND_PACKAGE(moveit_setup_assistant REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
+find_package(catkin REQUIRED)
 
 INCLUDE_DIRECTORIES(include ${orocos_kdl_INCLUDE_DIRS}
                             ${moveit_setup_assistant_INCLUDE_DIRS}
@@ -73,8 +74,27 @@ ADD_EXECUTABLE(moveit_compute_default_collisions main.cpp
 TARGET_LINK_LIBRARIES(moveit_compute_default_collisions ${orocos_kdl_LIBRARIES}
                                                         ${moveit_setup_assistant_LIBRARIES}
                                                         ${Boost_LIBRARIES})
+
 install(TARGETS moveit_compute_default_collisions
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+
+catkin_package(
+   INCLUDE_DIRS include
+)
+
+
+ADD_LIBRARY(mcdc src/moveit_compute_default_collisions.cpp ${proj_INCLUDES})
+
+TARGET_LINK_LIBRARIES(mcdc ${orocos_kdl_LIBRARIES} ${moveit_setup_assistant_LIBRARIES}
+                                                        ${Boost_LIBRARIES})
+
+install(TARGETS mcdc
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
+
+add_subdirectory(bindings/python/)
 
