@@ -73,10 +73,25 @@ class MoveitComputeDefaultCollisions {
 public:
     typedef boost::shared_ptr<MoveitComputeDefaultCollisions> Ptr;
 
+    /**
+     * @brief MoveitComputeDefaultCollisions constructor
+     */
     MoveitComputeDefaultCollisions();
 
+    /**
+     * @brief initFromPath initialize internal data using path to urdf and srdf
+     * @param urdf_path
+     * @param srdf_path
+     * @param cylinders_to_capsules
+     */
     void initFromPath(const std::string& urdf_path, const std::string& srdf_path, const bool& cylinders_to_capsules);
 
+    /**
+     * @brief initFromString initialize internal data using urdf and srdf strings
+     * @param urdf_string
+     * @param srdf_string
+     * @param cylinders_to_capsules
+     */
     void initFromString(const std::string& urdf_string, const std::string& srdf_string, const bool& cylinders_to_capsules);
 
     /**
@@ -97,6 +112,12 @@ public:
      * @return true on success
      */
     bool computeDefaultCollisions(unsigned int num_trials = 75000);
+
+    /**
+     * @brief getXmlString return srdf xml string
+     * @return xml string
+     */
+    std::string getXmlString();
 };
 
 #endif

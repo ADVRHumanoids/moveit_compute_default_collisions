@@ -14,6 +14,6 @@ PYBIND11_MODULE(pymcdc, m) {
         .def("initFromString", &MoveitComputeDefaultCollisions::initFromString)
         .def("printDisabledCollisions", &MoveitComputeDefaultCollisions::print)
         .def("save", &MoveitComputeDefaultCollisions::save)
-        .def("computeDefaultCollisions", &MoveitComputeDefaultCollisions::computeDefaultCollisions);
-
+        .def("computeDefaultCollisions", &MoveitComputeDefaultCollisions::computeDefaultCollisions)
+        .def("getXmlString", &MoveitComputeDefaultCollisions::getXmlString);
 }

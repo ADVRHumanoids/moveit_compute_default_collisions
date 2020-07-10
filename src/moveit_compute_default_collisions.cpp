@@ -149,7 +149,7 @@ void MoveitComputeDefaultCollisions::initFromString(const std::string& urdf_stri
         }
 
         config_data_->srdf_->srdf_model_.reset(new srdf::Model());
-        if(config_data_->srdf_->srdf_model_->initString(*config_data_->urdf_model_, srdf_string))
+        if(!config_data_->srdf_->srdf_model_->initString(*config_data_->urdf_model_, srdf_string))
         {
             std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
             throw new std::runtime_error("Failed to parse SRDF robot model!");
@@ -188,30 +188,18 @@ void MoveitComputeDefaultCollisions::print()
 
 bool MoveitComputeDefaultCollisions::save()
 {
-    // reset the data in the SRDF Writer class
-    config_data_->srdf_->disabled_collisions_.clear();
-
-    // Create temp disabled collision
-    srdf::Model::DisabledCollision dc;
-
-    // copy the data in this class's LinkPairMap datastructure to srdf::Model::DisabledCollision format
-    for ( moveit_setup_assistant::LinkPairMap::const_iterator pair_it = link_pairs_.begin();
-          pair_it != link_pairs_.end(); ++pair_it)
-    {
-      // Only copy those that are actually disabled
-      if( pair_it->second.disable_check )
-      {
-        dc.link1_ = pair_it->first.first;
-        dc.link2_ = pair_it->first.second;
-        dc.reason_ = moveit_setup_assistant::disabledReasonToString( pair_it->second.reason );
-        config_data_->srdf_->disabled_collisions_.push_back( dc );
-      }
-    }
-
     if(!config_data_->srdf_->writeSRDF(config_data_->srdf_path_))
         return false;
 
     return true;
+}
+
+std::string MoveitComputeDefaultCollisions::getXmlString()
+{
+    if(config_data_)
+        return config_data_->srdf_->getSRDFString();
+    else
+        return "";
 }
 
 bool MoveitComputeDefaultCollisions::computeDefaultCollisions(unsigned int num_trials)
@@ -232,5 +220,28 @@ bool MoveitComputeDefaultCollisions::computeDefaultCollisions(unsigned int num_t
                                                         min_frac, verbose);
 
     collision_progress = 100;
+
+
+    // reset the data in the SRDF Writer class
+    config_data_->srdf_->disabled_collisions_.clear();
+
+    // Create temp disabled collision
+    srdf::Model::DisabledCollision dc;
+
+    // copy the data in this class's LinkPairMap datastructure to srdf::Model::DisabledCollision format
+    for ( moveit_setup_assistant::LinkPairMap::const_iterator pair_it = link_pairs_.begin();
+          pair_it != link_pairs_.end(); ++pair_it)
+    {
+      // Only copy those that are actually disabled
+      if( pair_it->second.disable_check )
+      {
+        dc.link1_ = pair_it->first.first;
+        dc.link2_ = pair_it->first.second;
+        dc.reason_ = moveit_setup_assistant::disabledReasonToString( pair_it->second.reason );
+        config_data_->srdf_->disabled_collisions_.push_back( dc );
+      }
+    }
+
+
     return true;
 }
