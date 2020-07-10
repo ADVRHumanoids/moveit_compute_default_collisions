@@ -12,7 +12,8 @@ srdf_path = path + "/robot6.srdf"
 
 attempt = 100000
 
-mcdc = pymcdc.MoveitComputeDefaultCollisions(urdf_path, srdf_path, False)
+mcdc = pymcdc.MoveitComputeDefaultCollisions()
+mcdc.initFromPath(urdf_path, srdf_path, False)
 
 if not mcdc.computeDefaultCollisions(attempt):
     print "Error while computing disabled collision pairs"

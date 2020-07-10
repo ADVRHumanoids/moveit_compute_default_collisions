@@ -85,7 +85,12 @@ void MoveitComputeDefaultCollisions::convertCylindersToCapsules(boost::shared_pt
     }
 }
 
-MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions(const std::string &urdf_path,
+MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions()
+{
+
+}
+
+void MoveitComputeDefaultCollisions::initFromPath(const std::string &urdf_path,
                                                                const std::string &srdf_path,
                                                                const bool& cylinders_to_capsules)
 {
@@ -110,6 +115,41 @@ MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions(const std::string
         config_data_->srdf_->srdf_model_.reset(new srdf::Model());
         if(!config_data_->srdf_->srdf_model_->initFile(*config_data_->urdf_model_,
                                                        srdf_path))
+        {
+            std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+            throw new std::runtime_error("Failed to parse SRDF robot model!");
+
+        }
+        else
+        {
+            config_data_->srdf_->initModel(*(config_data_->urdf_model_),
+                                           *(config_data_->srdf_->srdf_model_));
+        }
+    }
+}
+
+void MoveitComputeDefaultCollisions::initFromString(const std::string& urdf_string,
+                                               const std::string& srdf_string,
+                                               const bool& cylinders_to_capsules)
+{
+    config_data_.reset(new moveit_setup_assistant::MoveItConfigData());
+
+    if (!config_data_->urdf_model_->initString(urdf_string))
+    {
+        std::cout<<"Failed to parse urdf robot model"<<std::endl;
+        throw new std::runtime_error("Failed to parse urdf robot model");
+    }
+    else
+    {
+        if(cylinders_to_capsules)
+        {
+            std::cout << "Converting cylinders to capsules..";
+            this->convertCylindersToCapsules(config_data_->urdf_model_);
+            std::cout << "ok" << std::endl;
+        }
+
+        config_data_->srdf_->srdf_model_.reset(new srdf::Model());
+        if(config_data_->srdf_->srdf_model_->initString(*config_data_->urdf_model_, srdf_string))
         {
             std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
             throw new std::runtime_error("Failed to parse SRDF robot model!");

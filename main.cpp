@@ -74,8 +74,9 @@ int main(int argc, char* argv[])
 
     try {
         std::cout << "Loading urdf/srdf pair.." << std::endl;
-        MoveitComputeDefaultCollisions::Ptr defaultCollisions(
-            new MoveitComputeDefaultCollisions(urdf_path, srdf_path,cylinders_to_capsules));
+        MoveitComputeDefaultCollisions::Ptr defaultCollisions =
+                boost::make_shared<MoveitComputeDefaultCollisions>();
+        defaultCollisions->initFromPath(urdf_path, srdf_path,cylinders_to_capsules);
 
         std::cout << "Computing disabled collision pairs..." << std::endl;
         if(!defaultCollisions->computeDefaultCollisions())

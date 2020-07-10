@@ -73,9 +73,11 @@ class MoveitComputeDefaultCollisions {
 public:
     typedef boost::shared_ptr<MoveitComputeDefaultCollisions> Ptr;
 
-    MoveitComputeDefaultCollisions(const std::string& urdf_path,
-                                   const std::string& srdf_path,
-                                   const bool& cylinders_to_capsules);
+    MoveitComputeDefaultCollisions();
+
+    void initFromPath(const std::string& urdf_path, const std::string& srdf_path, const bool& cylinders_to_capsules);
+
+    void initFromString(const std::string& urdf_string, const std::string& srdf_string, const bool& cylinders_to_capsules);
 
     /**
      * @brief print prints a list of disabled collision pairs
