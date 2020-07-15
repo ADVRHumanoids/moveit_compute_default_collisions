@@ -194,6 +194,14 @@ bool MoveitComputeDefaultCollisions::save()
     return true;
 }
 
+bool MoveitComputeDefaultCollisions::save(const std::string& path)
+{
+    if(!config_data_->srdf_->writeSRDF(path))
+        return false;
+
+    return true;
+}
+
 std::string MoveitComputeDefaultCollisions::getXmlString()
 {
     if(config_data_)

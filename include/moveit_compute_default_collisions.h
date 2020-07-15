@@ -106,6 +106,13 @@ public:
     bool save();
 
     /**
+     * @brief save srdf file to given path
+     * @param path
+     * @return true if success
+     */
+    bool save(const std::string& path);
+
+    /**
      * @brief computeDefaultCollisions computes the default collision for the selected urdf,srdf pair
      * @param num_trials the number of trials of compute default collision to run.
      *        Should be a number between 2000 and 100000. Higher numbers are suggested
