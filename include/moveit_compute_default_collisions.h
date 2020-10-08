@@ -18,10 +18,19 @@
 #ifndef __MOVEIT_COMPUTE_DEFAULT_COLLISIONS_H__
 #define __MOVEIT_COMPUTE_DEFAULT_COLLISIONS_H__
 
-#include <boost/shared_ptr.hpp>
 #include <kdl/frames.hpp>
 #include <moveit/setup_assistant/tools/compute_default_collisions.h>
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
+
+#if ROS_VERSION_MINOR <= 12
+#include <boost/shared_ptr.hpp>
+#define MCDC_SHARED_PTR boost::shared_ptr
+#define MCDC_DYN_PTR_CAST boost::dynamic_pointer_cast
+#else
+#include <memory>
+#define MCDC_SHARED_PTR std::shared_ptr
+#define MCDC_DYN_PTR_CAST std::dynamic_pointer_cast
+#endif
 
 /**
  * @brief The MoveitComputeDefaultCollisions class computes the ACM (allowed collision matrix)
@@ -69,9 +78,9 @@ class MoveitComputeDefaultCollisions {
      * shape has been defined, it will construct a list composed of a cylinder plus two spheres, representing a capsule.
      * @param urdf_model the urdf model to traverse
      */
-    void convertCylindersToCapsules(boost::shared_ptr<urdf::Model> urdf_model);
+    void convertCylindersToCapsules(MCDC_SHARED_PTR<urdf::Model> urdf_model);
 public:
-    typedef boost::shared_ptr<MoveitComputeDefaultCollisions> Ptr;
+    typedef MCDC_SHARED_PTR<MoveitComputeDefaultCollisions> Ptr;
 
     /**
      * @brief MoveitComputeDefaultCollisions constructor

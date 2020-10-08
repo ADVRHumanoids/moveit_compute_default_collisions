@@ -19,6 +19,14 @@
 #include <boost/program_options.hpp>
 #include "moveit_compute_default_collisions.h"
 
+#if ROS_VERSION_MINOR <= 12
+#include <boost/make_shared.hpp>.hpp>
+using boost::make_shared;
+#else
+#include <memory>
+using std::make_shared;
+#endif
+
 int main(int argc, char* argv[])
 {
     std::string appName = boost::filesystem::basename(argv[0]);
@@ -75,7 +83,7 @@ int main(int argc, char* argv[])
     try {
         std::cout << "Loading urdf/srdf pair.." << std::endl;
         MoveitComputeDefaultCollisions::Ptr defaultCollisions =
-                boost::make_shared<MoveitComputeDefaultCollisions>();
+                make_shared<MoveitComputeDefaultCollisions>();
         defaultCollisions->initFromPath(urdf_path, srdf_path,cylinders_to_capsules);
 
         std::cout << "Computing disabled collision pairs..." << std::endl;

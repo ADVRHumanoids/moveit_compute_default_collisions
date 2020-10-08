@@ -1,5 +1,7 @@
 #include "moveit_compute_default_collisions.h"
 
+
+
 // construct vector
 KDL::Vector toKdl(const urdf::Vector3& v)
 {
@@ -42,37 +44,37 @@ urdf::Pose toUrdf(const KDL::Frame& f)
 }
 
 
-void MoveitComputeDefaultCollisions::convertCylindersToCapsules(boost::shared_ptr<urdf::Model> urdf_model)
+void MoveitComputeDefaultCollisions::convertCylindersToCapsules(MCDC_SHARED_PTR<urdf::Model> urdf_model)
 {
-    std::vector<boost::shared_ptr<urdf::Link> > links; urdf_model->getLinks(links);
-    typedef std::vector<boost::shared_ptr<urdf::Link> >::iterator link_it;
+    std::vector<MCDC_SHARED_PTR<urdf::Link> > links; urdf_model->getLinks(links);
+    typedef std::vector<MCDC_SHARED_PTR<urdf::Link> >::iterator link_it;
     for(link_it it = links.begin();
         it != links.end(); ++it) {
-        boost::shared_ptr<urdf::Link> link = *it;
+        MCDC_SHARED_PTR<urdf::Link> link = *it;
         if( link->collision &&
             link->collision->geometry &&
             link->collision->geometry->type == urdf::Geometry::CYLINDER )
         {
             Capsule c(  toKdl(link->collision->origin),
-                        boost::dynamic_pointer_cast<urdf::Cylinder>(link->collision->geometry)->radius,
-                        boost::dynamic_pointer_cast<urdf::Cylinder>(link->collision->geometry)->length);
+                        MCDC_DYN_PTR_CAST<urdf::Cylinder>(link->collision->geometry)->radius,
+                        MCDC_DYN_PTR_CAST<urdf::Cylinder>(link->collision->geometry)->length);
             KDL::Vector ep1, ep2;
             c.getEndPoints(ep1,ep2);
 
-            boost::shared_ptr<urdf::Collision> c1(new urdf::Collision());
+            MCDC_SHARED_PTR<urdf::Collision> c1(new urdf::Collision());
 #if(moveit_compute_default_collisions_use_xenial == 1)
             c1->group_name = link->collision->group_name;
 #endif
             c1->origin.position = toUrdf(ep1);
             c1->origin.rotation = link->collision->origin.rotation;
-            boost::shared_ptr<urdf::Sphere> s1(new urdf::Sphere());
+            MCDC_SHARED_PTR<urdf::Sphere> s1(new urdf::Sphere());
             s1->radius = c.getRadius(); s1->type = urdf::Geometry::SPHERE;
             c1->geometry = s1;
 
-            boost::shared_ptr<urdf::Collision> c2(new urdf::Collision());
+            MCDC_SHARED_PTR<urdf::Collision> c2(new urdf::Collision());
             c2->origin.position = toUrdf(ep2);
             c2->origin.rotation = link->collision->origin.rotation;
-            boost::shared_ptr<urdf::Sphere> s2(new urdf::Sphere());
+            MCDC_SHARED_PTR<urdf::Sphere> s2(new urdf::Sphere());
             s2->radius = c.getRadius(); s2->type = urdf::Geometry::SPHERE;
             c2->geometry = s2;
 
