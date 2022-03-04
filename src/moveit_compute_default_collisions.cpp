@@ -1,6 +1,6 @@
 #include "moveit_compute_default_collisions.h"
 
-#if ROS_MINOR_VERSION > 14
+#if ROS_MINOR_VERSION >= 14
     #define DC_VAR_NAME disabled_collision_pairs_
     #define DC_CLASS_NAME CollisionPair
 #else 
