@@ -2,10 +2,10 @@
 
 #if ROS_MINOR_VERSION > 14
     #define DC_VAR_NAME disabled_collision_pairs_
-    #define FC_CLASS_NAME CollisionPair
+    #define DC_CLASS_NAME CollisionPair
 #else 
     #define DC_VAR_NAME disabled_collisions_
-    #define FC_CLASS_NAME DisabledCollision
+    #define DC_CLASS_NAME DisabledCollision
 #endif
 
 
@@ -240,10 +240,10 @@ bool MoveitComputeDefaultCollisions::computeDefaultCollisions(unsigned int num_t
 
 
     // reset the data in the SRDF Writer class
-    config_data_->srdf_->disabled_collisions_.clear();
+    config_data_->srdf_->DC_VAR_NAME.clear();
 
     // Create temp disabled collision
-    srdf::Model::DisabledCollision dc;
+    srdf::Model::DC_CLASS_NAME dc;
 
     // copy the data in this class's LinkPairMap datastructure to srdf::Model::DisabledCollision format
     for ( moveit_setup_assistant::LinkPairMap::const_iterator pair_it = link_pairs_.begin();
@@ -255,7 +255,7 @@ bool MoveitComputeDefaultCollisions::computeDefaultCollisions(unsigned int num_t
         dc.link1_ = pair_it->first.first;
         dc.link2_ = pair_it->first.second;
         dc.reason_ = moveit_setup_assistant::disabledReasonToString( pair_it->second.reason );
-        config_data_->srdf_->disabled_collisions_.push_back( dc );
+        config_data_->srdf_->DC_VAR_NAME.push_back( dc );
       }
     }
 
