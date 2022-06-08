@@ -1,7 +1,7 @@
 #include "moveit_compute_default_collisions.h"
 
-#define DC_VAR_NAME disabled_collisions_
-#define DC_CLASS_NAME DisabledCollision
+#define DC_VAR_NAME disabled_collision_pairs_
+#define DC_CLASS_NAME CollisionPair
 
 
 // construct vector
