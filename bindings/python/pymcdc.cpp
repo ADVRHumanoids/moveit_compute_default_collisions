@@ -11,6 +11,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(pymcdc, m) {
     py::class_<MoveitComputeDefaultCollisions>(m, "MoveitComputeDefaultCollisions")
         .def(py::init<>())
+        .def("setVerbose", &MoveitComputeDefaultCollisions::setVerbose)
         .def("initFromPath", &MoveitComputeDefaultCollisions::initFromPath)
         .def("initFromString", &MoveitComputeDefaultCollisions::initFromString)
         .def("printDisabledCollisions", &MoveitComputeDefaultCollisions::print)

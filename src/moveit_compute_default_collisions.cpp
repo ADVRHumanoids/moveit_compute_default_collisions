@@ -1,4 +1,5 @@
 #include "moveit_compute_default_collisions.h"
+#include <ros/console.h>
 
 #define DC_VAR_NAME disabled_collision_pairs_
 #define DC_CLASS_NAME CollisionPair
@@ -92,6 +93,28 @@ void MoveitComputeDefaultCollisions::convertCylindersToCapsules(MCDC_SHARED_PTR<
 MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions()
 {
 
+}
+
+void MoveitComputeDefaultCollisions::setVerbose(const bool& verbose){
+    
+    namespace rc = ros::console;
+
+    std::map<std::string, rc::levels::Level> ros_logger_levels;
+
+    rc::Level verbosity_level;
+    if(verbose){
+        verbosity_level = rc::levels::Info;
+    }
+    else{
+        verbosity_level = rc::levels::Error;
+    }
+    
+    rc::get_loggers(ros_logger_levels);
+
+    for(auto p : ros_logger_levels)
+    {
+        rc::set_logger_level(p.first, verbosity_level);
+    }
 }
 
 void MoveitComputeDefaultCollisions::initFromPath(const std::string &urdf_path,

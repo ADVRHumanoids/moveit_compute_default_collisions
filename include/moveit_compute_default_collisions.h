@@ -88,6 +88,12 @@ public:
     MoveitComputeDefaultCollisions();
 
     /**
+     * @brief setVerbose sets the behavior of the Moveit ROS nodes loggers to be verbose 
+     * @param verbose true if verbose
+     */
+    void setVerbose(const bool& verbose);
+
+    /**
      * @brief initFromPath initialize internal data using path to urdf and srdf
      * @param urdf_path
      * @param srdf_path
