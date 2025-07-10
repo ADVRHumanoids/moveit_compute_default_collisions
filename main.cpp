@@ -19,16 +19,13 @@
 #include <boost/program_options.hpp>
 #include "moveit_compute_default_collisions.h"
 
-#if ROS_VERSION_MINOR <= 12
-#include <boost/make_shared.hpp>.hpp>
-using boost::make_shared;
-#else
 #include <memory>
 using std::make_shared;
-#endif
 
 int main(int argc, char* argv[])
 {
+    rclcpp::init(argc, argv);
+
     std::string appName = boost::filesystem::basename(argv[0]);
     std::string urdf_path;
     std::string srdf_path;
@@ -92,7 +89,7 @@ int main(int argc, char* argv[])
         else {
             defaultCollisions->print();
             std::cout << "Saving collision pairs to srdf.. " << std::endl;
-            defaultCollisions->save();
+            defaultCollisions->save(srdf_path);
         }
     }
     catch(std::exception& e)

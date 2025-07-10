@@ -18,19 +18,18 @@
 #ifndef __MOVEIT_COMPUTE_DEFAULT_COLLISIONS_H__
 #define __MOVEIT_COMPUTE_DEFAULT_COLLISIONS_H__
 
-#include <kdl/frames.hpp>
-#include <moveit/setup_assistant/tools/compute_default_collisions.h>
-#include <moveit/setup_assistant/tools/moveit_config_data.h>
+#include <iostream>
+#include <srdfdom/model.h>
+#include <srdfdom/srdf_writer.h>
 
-#if ROS_VERSION_MINOR <= 12
-#include <boost/shared_ptr.hpp>
-#define MCDC_SHARED_PTR boost::shared_ptr
-#define MCDC_DYN_PTR_CAST boost::dynamic_pointer_cast
-#else
+#include <kdl/frames.hpp>
+#include <moveit_setup_srdf_plugins/compute_default_collisions.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
+#include <urdf/model.h>
+
 #include <memory>
 #define MCDC_SHARED_PTR std::shared_ptr
 #define MCDC_DYN_PTR_CAST std::dynamic_pointer_cast
-#endif
 
 /**
  * @brief The MoveitComputeDefaultCollisions class computes the ACM (allowed collision matrix)
@@ -68,10 +67,15 @@ class MoveitComputeDefaultCollisions {
     };
 
     /// main storage of link pair data
-    moveit_setup_assistant::LinkPairMap link_pairs_;
+    moveit_setup::srdf_setup::LinkPairMap link_pairs_;
+    planning_scene::PlanningScenePtr planning_scene_;
+    MCDC_SHARED_PTR<urdf::Model> urdf_model_;
+    MCDC_SHARED_PTR<srdf::Model> srdf_model_;
+    srdf::SRDFWriter srdf_writer_;
+    rclcpp::Node::SharedPtr node_;
 
     /// Contains all the configuration data for the setup assistant
-    moveit_setup_assistant::MoveItConfigDataPtr config_data_;
+    // moveit_setup::srdf_setup::MoveItConfigDataPtr config_data_;
 
     /**
      * @brief convertCylindersToCapsules traverses an urdf, and for links where a cylinder collision
