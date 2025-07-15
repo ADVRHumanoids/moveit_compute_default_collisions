@@ -1,6 +1,8 @@
 #include "moveit_compute_default_collisions.h"
-#include <fstream>
-#include <moveit/planning_scene/planning_scene.h>
+#include <ros/console.h>
+
+#define DC_VAR_NAME disabled_collision_pairs_
+#define DC_CLASS_NAME CollisionPair
 
 
 // construct vector
@@ -90,106 +92,108 @@ void MoveitComputeDefaultCollisions::convertCylindersToCapsules(MCDC_SHARED_PTR<
 
 MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions()
 {
-    node_ = rclcpp::Node::make_shared("moveit_compute_default_collisions");
+
 }
 
 void MoveitComputeDefaultCollisions::setVerbose(const bool& verbose){
     
-    // namespace rc = ros::console;
+    namespace rc = ros::console;
 
-    // std::map<std::string, rc::levels::Level> ros_logger_levels;
+    std::map<std::string, rc::levels::Level> ros_logger_levels;
 
-    // rc::Level verbosity_level;
-    // if(verbose){
-    //     verbosity_level = rc::levels::Info;
-    // }
-    // else{
-    //     verbosity_level = rc::levels::Error;
-    // }
+    rc::Level verbosity_level;
+    if(verbose){
+        verbosity_level = rc::levels::Info;
+    }
+    else{
+        verbosity_level = rc::levels::Error;
+    }
     
-    // rc::get_loggers(ros_logger_levels);
+    rc::get_loggers(ros_logger_levels);
 
-    // for(auto p : ros_logger_levels)
-    // {
-    //     rc::set_logger_level(p.first, verbosity_level);
-    // }
+    for(auto p : ros_logger_levels)
+    {
+        rc::set_logger_level(p.first, verbosity_level);
+    }
 }
 
 void MoveitComputeDefaultCollisions::initFromPath(const std::string &urdf_path,
                                                                const std::string &srdf_path,
                                                                const bool& cylinders_to_capsules)
 {
-    // Load URDF from file
-    std::ifstream urdf_file(urdf_path);
-    if (!urdf_file)
-    {
-        std::cout << "Failed to open URDF file: " << urdf_path << std::endl;
-        throw std::runtime_error("Failed to open URDF file");
-    }
-    std::string urdf_string((std::istreambuf_iterator<char>(urdf_file)), std::istreambuf_iterator<char>());
-    urdf_file.close();
+    config_data_.reset(new moveit_setup_assistant::MoveItConfigData());
+    config_data_->urdf_path_ = urdf_path;
+    config_data_->srdf_path_ = srdf_path;
 
-    // Load SRDF from file
-    std::ifstream srdf_file(srdf_path);
-    if (!srdf_file)
+    if (!config_data_->urdf_model_->initFile(urdf_path))
     {
-        std::cout << "Failed to open SRDF file: " << srdf_path << std::endl;
-        throw std::runtime_error("Failed to open SRDF file");
+        std::cout<<"Failed to parse urdf robot model"<<std::endl;
+        throw new std::runtime_error("Failed to parse urdf robot model");
     }
-    std::string srdf_string((std::istreambuf_iterator<char>(srdf_file)), std::istreambuf_iterator<char>());
-    srdf_file.close();
+    else
+    {
+        if(cylinders_to_capsules)
+        {
+            std::cout << "Converting cylinders to capsules..";
+            this->convertCylindersToCapsules(config_data_->urdf_model_);
+            std::cout << "ok" << std::endl;
+        }
 
-    initFromString(urdf_string, srdf_string, cylinders_to_capsules);
+        config_data_->srdf_->srdf_model_.reset(new srdf::Model());
+        if(!config_data_->srdf_->srdf_model_->initFile(*config_data_->urdf_model_,
+                                                       srdf_path))
+        {
+            std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+            throw new std::runtime_error("Failed to parse SRDF robot model!");
+
+        }
+        else
+        {
+            config_data_->srdf_->initModel(*(config_data_->urdf_model_),
+                                           *(config_data_->srdf_->srdf_model_));
+        }
+    }
 }
 
 void MoveitComputeDefaultCollisions::initFromString(const std::string& urdf_string,
                                                const std::string& srdf_string,
                                                const bool& cylinders_to_capsules)
 {
-    auto urdf_model = std::make_shared<urdf::Model>();
-    if (!urdf_model->initString(urdf_string))
+    config_data_.reset(new moveit_setup_assistant::MoveItConfigData());
+
+    if (!config_data_->urdf_model_->initString(urdf_string))
     {
-        std::cout << "Failed to parse urdf robot model" << std::endl;
-        throw std::runtime_error("Failed to parse urdf robot model");
+        std::cout<<"Failed to parse urdf robot model"<<std::endl;
+        throw new std::runtime_error("Failed to parse urdf robot model");
     }
-
-    if (cylinders_to_capsules)
+    else
     {
-        std::cout << "Converting cylinders to capsules..";
-        this->convertCylindersToCapsules(urdf_model);
-        std::cout << "ok" << std::endl;
+        if(cylinders_to_capsules)
+        {
+            std::cout << "Converting cylinders to capsules..";
+            this->convertCylindersToCapsules(config_data_->urdf_model_);
+            std::cout << "ok" << std::endl;
+        }
+
+        config_data_->srdf_->srdf_model_.reset(new srdf::Model());
+        if(!config_data_->srdf_->srdf_model_->initString(*config_data_->urdf_model_, srdf_string))
+        {
+            std::cout<<"Failed to parse SRDF robot model!"<<std::endl;
+            throw new std::runtime_error("Failed to parse SRDF robot model!");
+
+        }
+        else
+        {
+            config_data_->srdf_->initModel(*(config_data_->urdf_model_),
+                                           *(config_data_->srdf_->srdf_model_));
+        }
     }
-
-    auto srdf_model = std::make_shared<srdf::Model>();
-    if (!srdf_model->initString(*urdf_model, srdf_string))
-    {
-        std::cout << "Failed to parse SRDF robot model!" << std::endl;
-        throw std::runtime_error("Failed to parse SRDF robot model!");
-    }
-
-    srdf_writer_.initModel(*urdf_model, *srdf_model);
-
-    // Create PlanningScene
-    robot_model_loader::RobotModelLoader::Options opts;
-    opts.urdf_string_ = urdf_string;
-    opts.srdf_string = srdf_string;
-    robot_model_loader::RobotModelLoaderPtr robot_model_loader =
-        std::make_shared<robot_model_loader::RobotModelLoader>(node_, opts);
-
-    moveit::core::RobotModelPtr robot_model = robot_model_loader->getModel();
-    if (!robot_model)
-    {
-        std::cout << "Failed to construct RobotModel from URDF and SRDF" << std::endl;
-        throw std::runtime_error("Failed to construct RobotModel");
-    }
-
-    planning_scene_ = std::make_shared<planning_scene::PlanningScene>(robot_model);
 }
 
 
 void MoveitComputeDefaultCollisions::print()
 {
-    for ( auto pair_it = link_pairs_.begin();
+    for ( moveit_setup_assistant::LinkPairMap::const_iterator pair_it = link_pairs_.begin();
           pair_it != link_pairs_.end();
           ++pair_it)
     {
@@ -202,7 +206,7 @@ void MoveitComputeDefaultCollisions::print()
                   << " - "
                   << pair_it->first.second.c_str()
                   << "; Reason: "
-                  << moveit_setup::srdf_setup::disabledReasonToString( pair_it->second.reason )
+                  << moveit_setup_assistant::disabledReasonToString( pair_it->second.reason )
                   << std::endl;
         }
     }
@@ -211,17 +215,26 @@ void MoveitComputeDefaultCollisions::print()
 
 bool MoveitComputeDefaultCollisions::save()
 {
-    throw std::runtime_error("Save path not specified");
+    if(!config_data_->srdf_->writeSRDF(config_data_->srdf_path_))
+        return false;
+
+    return true;
 }
 
 bool MoveitComputeDefaultCollisions::save(const std::string& path)
 {
-    return srdf_writer_.writeSRDF(path);
+    if(!config_data_->srdf_->writeSRDF(path))
+        return false;
+
+    return true;
 }
 
 std::string MoveitComputeDefaultCollisions::getXmlString()
 {
-    return srdf_writer_.getSRDFString();
+    if(config_data_)
+        return config_data_->srdf_->getSRDFString();
+    else
+        return "";
 }
 
 bool MoveitComputeDefaultCollisions::computeDefaultCollisions(unsigned int num_trials)
@@ -233,22 +246,25 @@ bool MoveitComputeDefaultCollisions::computeDefaultCollisions(unsigned int num_t
     unsigned int collision_progress = 0;
 
     // clear previously loaded collision matrix entries
-    planning_scene_->getAllowedCollisionMatrixNonConst().clear();
+    config_data_->getPlanningScene()->getAllowedCollisionMatrixNonConst().clear();
 
     // Find the default collision matrix - all links that are allowed to collide
     link_pairs_ =
-      moveit_setup::srdf_setup::computeDefaultCollisions( planning_scene_,
+      moveit_setup_assistant::computeDefaultCollisions( config_data_->getPlanningScene(),
                                                         &collision_progress, include_never_colliding, num_trials,
                                                         min_frac, verbose);
 
     collision_progress = 100;
 
+
+    // reset the data in the SRDF Writer class
+    config_data_->srdf_->DC_VAR_NAME.clear();
+
     // Create temp disabled collision
-    srdf::Model::CollisionPair dc;
-    std::vector<srdf::Model::CollisionPair> disabled_collisions;
+    srdf::Model::DC_CLASS_NAME dc;
 
     // copy the data in this class's LinkPairMap datastructure to srdf::Model::DisabledCollision format
-    for ( auto pair_it = link_pairs_.begin();
+    for ( moveit_setup_assistant::LinkPairMap::const_iterator pair_it = link_pairs_.begin();
           pair_it != link_pairs_.end(); ++pair_it)
     {
       // Only copy those that are actually disabled
@@ -256,12 +272,11 @@ bool MoveitComputeDefaultCollisions::computeDefaultCollisions(unsigned int num_t
       {
         dc.link1_ = pair_it->first.first;
         dc.link2_ = pair_it->first.second;
-        dc.reason_ = moveit_setup::srdf_setup::disabledReasonToString( pair_it->second.reason );
-        disabled_collisions.push_back( dc );
+        dc.reason_ = moveit_setup_assistant::disabledReasonToString( pair_it->second.reason );
+        config_data_->srdf_->DC_VAR_NAME.push_back( dc );
       }
     }
 
-    srdf_writer_.disabled_collision_pairs_ = disabled_collisions;
 
     return true;
 }
