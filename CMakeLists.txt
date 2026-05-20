@@ -56,6 +56,7 @@ FIND_PACKAGE(moveit_setup_framework REQUIRED)
 FIND_PACKAGE(srdfdom REQUIRED)
 FIND_PACKAGE(urdf REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 
 INCLUDE_DIRECTORIES(include ${orocos_kdl_INCLUDE_DIRS}
                             ${moveit_setup_assistant_INCLUDE_DIRS}
@@ -80,15 +81,16 @@ ament_package(
 
 
 ADD_LIBRARY(mcdc src/moveit_compute_default_collisions.cpp ${proj_INCLUDES})
+set_target_properties(mcdc PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 TARGET_LINK_LIBRARIES(mcdc ${orocos_kdl_LIBRARIES} ${moveit_setup_assistant_LIBRARIES}
                                                         ${Boost_LIBRARIES} srdfdom::srdfdom moveit_setup_srdf_plugins::moveit_setup_srdf_plugins)
 
 install(TARGETS mcdc
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
 
 
-# add_subdirectory(bindings/python/)
+add_subdirectory(bindings/python/)
 

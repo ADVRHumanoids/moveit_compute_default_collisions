@@ -90,6 +90,10 @@ void MoveitComputeDefaultCollisions::convertCylindersToCapsules(MCDC_SHARED_PTR<
 
 MoveitComputeDefaultCollisions::MoveitComputeDefaultCollisions()
 {
+    if (!rclcpp::ok())
+    {
+        rclcpp::init(0, nullptr);
+    }
     node_ = rclcpp::Node::make_shared("moveit_compute_default_collisions");
 }
 
